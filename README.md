@@ -28,11 +28,15 @@ Our solution specifically addresses the **Binary Classification of Drivable vs. 
 * **Dynamic Probability Thresholding:** A live UI slider allows engineers to adjust the neural network's strictness (`0.1` to `0.9`) in real-time, actively mitigating Out-of-Distribution (OOD) indoor hallucinations.
 * **Live Sensor Feed:** WebRTC integration hijacks local optical hardware (webcams) for continuous, real-time spatial evaluation directly through the browser.
 
-## How to Initialize the Node Locally
+## How to Run The Code
 
-**1. Clone the repository and install the required edge dependencies:**
+**1. Clone the repository:**
 ```bash
 git clone https://github.com/tejassa272-png/HACKATHON_2_2026.git
 cd HACKATHON_2_2026
+**2. Install the dependencies:**
 pip install fastapi uvicorn onnxruntime opencv-python numpy imageio imageio-ffmpeg psutil python-multipart
-start web.html; python api.py
+**3. Run The api.py File:**
+python api.py
+**4. Open the Interface:**
+(Leave the terminal running). Navigate to your project folder using your computer's file explorer and double-click the web.html file to open the live dashboard in your web browser.
