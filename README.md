@@ -1,5 +1,5 @@
 # HACKATHON_2_2026
-# 🏎️ E.V.A. (Edge Vision Architecture)
+# E.V.A. (Edge Vision Architecture)
 **Level 4 Autonomous Vehicle Perception Node | Offline Edge Compute Prototype**
 
 ![E.V.A. Dashboard](https://img.shields.io/badge/Status-Live_Telemetry-10b981?style=for-the-badge)
@@ -9,7 +9,7 @@
 
 E.V.A. is a production-grade, entirely offline perception node designed for Level 4 autonomous path planning. It tackles a core safety hazard in autonomous driving: **Cloud Dependency.** By aggressively optimizing for Edge Compute, E.V.A. drops the massive latency and internet-dependency of traditional ResNet/SegFormer models, achieving stable real-time tensor processing strictly on local CPU hardware with a sub-300MB memory footprint.
 
-## 🧠 Core Engineering Architecture
+## Core Engineering Architecture
 
 Our solution specifically addresses the **Binary Classification of Drivable vs. Non-Drivable Space** using a decoupled, full-stack ML-Ops pipeline.
 
@@ -31,7 +31,7 @@ Our solution specifically addresses the **Binary Classification of Drivable vs. 
 
 ---
 
-## 🚀 How to Initialize the Node Locally
+## How to Initialize the Node Locally
 
 **1. Clone the repository and install the required edge dependencies:**
 ```bash
