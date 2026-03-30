@@ -34,9 +34,14 @@ Our solution specifically addresses the **Binary Classification of Drivable vs. 
 ```bash
 git clone https://github.com/tejassa272-png/HACKATHON_2_2026.git
 cd HACKATHON_2_2026
+```
 **2. Install the dependencies:**
+```bash
 pip install fastapi uvicorn onnxruntime opencv-python numpy imageio imageio-ffmpeg psutil python-multipart
+```
 **3. Run The api.py File:**
+```bash
 python api.py
+```
 **4. Open the Interface:**
 (Leave the terminal running). Navigate to your project folder using your computer's file explorer and double-click the web.html file to open the live dashboard in your web browser.
