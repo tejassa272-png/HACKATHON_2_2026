@@ -1,4 +1,3 @@
-# HACKATHON_2_2026
 # E.V.A. (Edge Vision Architecture)
 **Level 4 Autonomous Vehicle Perception Node | Offline Edge Compute Prototype**
 
