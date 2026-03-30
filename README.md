@@ -44,4 +44,6 @@ pip install fastapi uvicorn onnxruntime opencv-python numpy imageio imageio-ffmp
 python api.py
 ```
 **4. Open the Interface:**
-(Leave the terminal running). Navigate to your project folder using your computer's file explorer and double-click the web.html file to open the live dashboard in your web browser.
+(Leave the terminal running).
+* Navigate to the project folder using your computer's file explorer and double-click the web.html file to open the live dashboard in your web browser.
+* Or in the vscode click on open with live server.
