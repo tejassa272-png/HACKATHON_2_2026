@@ -9,13 +9,6 @@
 
 E.V.A. is a production-grade, entirely offline perception node designed for Level 4 autonomous path planning. It tackles a core safety hazard in autonomous driving: **Cloud Dependency.** By aggressively optimizing for Edge Compute, E.V.A. drops the massive latency and internet-dependency of traditional ResNet/SegFormer models, achieving stable real-time tensor processing strictly on local CPU hardware with a sub-300MB memory footprint.
 
-## 🎥 Live Demonstration (Screening Round)
-*(Hackathon Judges: Please view the live WebRTC edge-compute pipeline in action below, as this architecture requires local hardware execution and cannot be hosted on static cloud pages).*
-
-**[ -> DRAG AND DROP YOUR 15-SECOND SCREEN RECORDING VIDEO HERE <- ]**
-
----
-
 ## 🧠 Core Engineering Architecture
 
 Our solution specifically addresses the **Binary Classification of Drivable vs. Non-Drivable Space** using a decoupled, full-stack ML-Ops pipeline.
