@@ -35,4 +35,5 @@ Our solution specifically addresses the **Binary Classification of Drivable vs. 
 ```bash
 git clone https://github.com/tejassa272-png/HACKATHON_2_2026.git
 cd HACKATHON_2_2026
-pip install fastapi uvicorn onnxruntime opencv-python numpy imageio psutil python-multipart
+pip install fastapi uvicorn onnxruntime opencv-python numpy imageio imageio-ffmpeg psutil python-multipart
+start web.html; python api.py
