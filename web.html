@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E.V.A. Node | Telemetry</title>
+    <style>
+        :root { --bg-dark: #030712; --panel-bg: rgba(15, 23, 42, 0.75); --border-glow: #3b82f6; --success-green: #10b981; --text-main: #f8fafc; --text-muted: #64748b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 40px 20px; overflow-x: hidden; }
+
+        .grid-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-size: 50px 50px; background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px); z-index: -1; transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px); animation: gridMove 20s linear infinite; }
+        @keyframes gridMove { 0% { transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px); } 100% { transform: perspective(500px) rotateX(60deg) translateY(50px) translateZ(-200px); } }
+
+        #bootScreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; padding: 40px; font-family: 'Courier New', monospace; color: var(--success-green); transition: opacity 0.8s ease, visibility 0.8s; }
+        .boot-line { margin-bottom: 8px; font-size: 16px; text-shadow: 0 0 5px rgba(16, 185, 129, 0.5); opacity: 0; }
+        .blinking-cursor { display: inline-block; width: 10px; height: 18px; background-color: var(--success-green); animation: blink 1s step-end infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .container { max-width: 1400px; margin: 0 auto; opacity: 0; transform: translateY(20px); transition: all 1s; }
+        .container.loaded { opacity: 1; transform: translateY(0); }
+        
+        header { border-bottom: 1px solid rgba(59, 130, 246, 0.2); padding-bottom: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        h1 { font-size: 28px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .badge { background: rgba(59, 130, 246, 0.1); color: var(--border-glow); padding: 4px 10px; border-radius: 4px; font-size: 12px; border: 1px solid rgba(59, 130, 246, 0.3); font-family: monospace; animation: pulseBadge 2s infinite; }
+        @keyframes pulseBadge { 0%, 100% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); } 50% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); } }
+        .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 5px; }
+
+        /* NEW: System Control Bar */
+        .system-bar { background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 15px 25px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);}
+        .slider-container { display: flex; align-items: center; gap: 15px; flex-grow: 1; max-width: 500px; }
+        input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--border-glow); margin-top: -7px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.8); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; border: 1px solid #334155; }
+        
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 1100px) { .grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+        .panel { background: var(--panel-bg); backdrop-filter: blur(12px); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); opacity: 0; transform: translateY(30px); display: flex; flex-direction: column;}
+        .container.loaded .panel:nth-child(1) { animation: slideUp 0.6s forwards 0.2s; }
+        .container.loaded .panel:nth-child(2) { animation: slideUp 0.6s forwards 0.4s; }
+        .container.loaded .panel:nth-child(3) { animation: slideUp 0.6s forwards 0.6s; }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+        h2 { font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; color: #e2e8f0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px;}
+        
+        .upload-zone { border: 2px dashed rgba(255,255,255,0.1); border-radius: 8px; padding: 25px 15px; text-align: center; cursor: pointer; transition: 0.2s; background: rgba(0,0,0,0.3); position: relative; margin-bottom: 15px; flex-grow: 0;}
+        .upload-zone:hover { border-color: var(--border-glow); background: rgba(59, 130, 246, 0.05); }
+        .upload-zone input[type="file"] { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
+        .file-name { font-size: 12px; color: var(--border-glow); margin-top: 8px; font-weight: 500; }
+
+        button { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: 1px solid #3b82f6; padding: 12px 20px; cursor: pointer; border-radius: 6px; font-weight: 600; width: 100%; font-size: 14px; transition: 0.2s; margin-bottom: 15px;}
+        button:hover { box-shadow: 0 0 15px rgba(37, 99, 235, 0.6); transform: translateY(-1px); }
+        button:disabled { background: #1e293b; color: #64748b; border-color: #334155; cursor: not-allowed; }
+
+        .btn-live { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
+        .btn-live:hover { background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .btn-live.active { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); animation: pulseRed 1.5s infinite;}
+        @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+
+        .media-container { border-radius: 8px; overflow: hidden; background: #000; border: 1px solid rgba(59, 130, 246, 0.2); height: 200px; display: flex; align-items: center; justify-content: center; position: relative; margin-top: auto;}
+        img, video { width: 100%; height: 100%; object-fit: cover; display: none; position: relative; z-index: 5;}
+        #liveWebcam { display: block; filter: grayscale(0.5) opacity(0.3); position: absolute; }
+        #liveOverlay { display: block; position: absolute; z-index: 10; opacity: 0.8;}
+        
+        .placeholder-text { color: #334155; font-size: 12px; font-family: monospace; letter-spacing: 1px; z-index: 1;}
+
+        .metrics-box { margin-top: 15px; background-color: #020617; padding: 12px; border-radius: 6px; border: 1px solid #1e293b; font-family: monospace; color: var(--success-green); font-size: 11px; display: flex; align-items: center; justify-content: space-between; }
+        .loader { display: none; color: var(--border-glow); font-size: 12px; text-align: center; margin-bottom: 10px; animation: pulse 1.5s infinite; }
+        
+        .live-dot { height: 8px; width: 8px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-right: 5px; opacity: 0; }
+        .live-dot.active { animation: blink 1s infinite; }
+    </style>
+</head>
+<body>
+    <div id="bootScreen">
+        <div id="bootText"></div>
+        <div><span class="blinking-cursor"></span></div>
+    </div>
+    <div class="grid-bg"></div>
+
+    <div class="container" id="mainApp">
+        <header>
+            <div>
+                <h1>Edge Vision Architecture (E.V.A.) <span class="badge">SYS_ONLINE</span></h1>
+                <p class="subtitle">DeepLabV3+ (MobileNetV3) • CUDA-Accelerated ONNX Runtime • Edge Compute Profile</p>
+            </div>
+            <div style="text-align: right;">
+                <p class="subtitle" style="color: #475569; font-family: monospace;">PORT: <span style="color: #3b82f6;">8000</span></p>
+                <p class="subtitle" style="color: #475569; font-family: monospace;">LATENCY TARGET: <span style="color: #10b981;">< 300ms</span></p>
+            </div>
+        </header>
+
+        <div class="system-bar">
+            <div class="slider-container">
+                <span style="color: #64748b; font-family: monospace; font-size: 12px;">PROBABILITY_THRESHOLD:</span>
+                <input type="range" id="threshSlider" min="0.1" max="0.9" step="0.05" value="0.5" oninput="document.getElementById('threshValue').innerText = parseFloat(this.value).toFixed(2)">
+                <span id="threshValue" style="color: var(--border-glow); font-family: monospace; font-weight: bold; width: 40px;">0.50</span>
+            </div>
+            <div style="font-family: monospace; font-size: 12px; color: #64748b;">
+                Tuning controls Active Node strictness. Lower = Higher Recall.
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="panel">
+                <h2>📸 Static Payload <span style="color: #475569; font-size: 12px;">NODE_01</span></h2>
+                <div class="upload-zone">
+                    <span style="color: #cbd5e1; font-size: 14px;">Upload Image</span>
+                    <input type="file" id="imageInput" accept="image/*" onchange="updateFileName('imageInput', 'imgFileName')">
+                    <div id="imgFileName" class="file-name"></div>
+                </div>
+                <button id="imgBtn" onclick="processImage()">Execute Analysis</button>
+                <div id="imgLoader" class="loader">⟳ Computing Tensor...</div>
+                <div class="media-container">
+                    <span class="placeholder-text" id="imgPlaceholder">AWAITING INPUT...</span>
+                    <img id="imageOutput" src="">
+                </div>
+                <div id="imgMetrics" class="metrics-box">
+                    <span>Standby...</span><span style="color: #475569;">-- FPS | -- MB</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🎥 Temporal Stream <span style="color: #475569; font-size: 12px;">NODE_02</span></h2>
+                <div class="upload-zone">
+                    <span style="color: #cbd5e1; font-size: 14px;">Upload Video (.mp4)</span>
+                    <input type="file" id="videoInput" accept="video/mp4" onchange="updateFileName('videoInput', 'vidFileName')">
+                    <div id="vidFileName" class="file-name"></div>
+                </div>
+                <button id="vidBtn" onclick="processVideo()">Compile Sequence (5s)</button>
+                <div id="vidLoader" class="loader">⟳ Processing Frames...</div>
+                <div class="media-container">
+                    <span class="placeholder-text" id="vidPlaceholder">AWAITING INPUT...</span>
+                    <video id="videoOutput" controls></video>
+                </div>
+                <div id="vidMetrics" class="metrics-box">
+                    <span>Standby...</span><span style="color: #475569;">-- FPS | -- MB</span>
+                </div>
+            </div>
+
+            <div class="panel" style="border-color: rgba(239, 68, 68, 0.3);">
+                <h2><span style="display: flex; align-items: center;"><span class="live-dot" id="liveIndicator"></span> Live Optical Sensor</span> <span style="color: #475569; font-size: 12px;">NODE_03</span></h2>
+                <div style="font-size: 13px; color: #94a3b8; margin-bottom: 20px; text-align: center;">
+                    Initializes Edge hardware camera and streams frames directly to local API.
+                </div>
+                <button id="liveBtn" class="btn-live" onclick="toggleLiveStream()">ENGAGE SENSOR LINK</button>
+                
+                <div class="media-container" style="border-color: rgba(239, 68, 68, 0.3);">
+                    <span class="placeholder-text" id="livePlaceholder">CAMERA OFFLINE</span>
+                    <canvas id="liveCanvas" style="display: none;"></canvas>
+                    <video id="liveWebcam" autoplay playsinline></video>
+                    <img id="liveOverlay" src="">
+                </div>
+                <div id="liveMetrics" class="metrics-box" style="color: #ef4444;">
+                    <span>Link Disconnected</span><span style="color: #475569;">-- FPS | -- MB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        // --- BOOT SEQUENCE ---
+        const bootLines = [
+            "WELCOME TO EDGE VISION ARCHITECTURE (E.V.A.)",
+            "=============================================",
+            "Initializing Level 4 Perception Node...",
+            "Loading bdd_drivable_opt.onnx...",
+            "Allocating tensor memory... 32-bit float enforced.",
+            "Initializing Telemetry Daemons (FPS, RAM)... OK",
+            "Connecting to localhost:8000... ESTABLISHED",
+            "SYSTEM ONLINE. ACCESS GRANTED."
+        ];
+
+        window.onload = async () => {
+            const container = document.getElementById('bootText');
+            for (let line of bootLines) {
+                const el = document.createElement('div'); el.className = 'boot-line'; el.innerText = `> ${line}`;
+                container.appendChild(el);
+                setTimeout(() => el.style.opacity = 1, 50);
+                await new Promise(r => setTimeout(r, Math.random() * 300 + 100));
+            }
+            setTimeout(() => {
+                document.getElementById('bootScreen').style.opacity = '0';
+                setTimeout(() => document.getElementById('bootScreen').style.display = 'none', 800);
+                setTimeout(() => document.getElementById('mainApp').classList.add('loaded'), 200);
+            }, 600);
+        };
+
+        function updateFileName(inputId, displayId) {
+            const files = document.getElementById(inputId).files;
+            document.getElementById(displayId).innerText = files.length > 0 ? files[0].name : "";
+        }
+
+        // --- NODE 01: STATIC IMAGE ---
+        async function processImage() {
+            const file = document.getElementById('imageInput').files[0];
+            if (!file) return;
+            document.getElementById('imgBtn').disabled = true; document.getElementById('imgLoader').style.display = 'block';
+            document.getElementById('imgPlaceholder').style.display = 'none'; document.getElementById('imageOutput').style.display = 'none';
+            
+            const formData = new FormData(); 
+            formData.append("file", file);
+            formData.append("threshold", document.getElementById('threshSlider').value); // NEW
+            
+            try {
+                const res = await fetch(`${API_URL}/segment_image`, { method: "POST", body: formData });
+                const ms = res.headers.get("X-Inference-Time");
+                const ram = res.headers.get("X-RAM-Usage"); // NEW
+                
+                document.getElementById('imageOutput').src = URL.createObjectURL(await res.blob());
+                document.getElementById('imageOutput').style.display = 'block';
+                document.getElementById('imgMetrics').innerHTML = `<span>Latency: <span style="color:#fff">${parseFloat(ms).toFixed(1)}ms</span></span><span style="color:#3b82f6;">[ ${(1000/ms).toFixed(1)} FPS | ${ram} MB ]</span>`;
+            } catch (e) { document.getElementById('imgMetrics').innerHTML = `<span style="color:#ef4444;">API ERR</span>`; }
+            document.getElementById('imgBtn').disabled = false; document.getElementById('imgLoader').style.display = 'none';
+        }
+
+        // --- NODE 02: VIDEO ---
+        async function processVideo() {
+            const file = document.getElementById('videoInput').files[0];
+            if (!file) return;
+            document.getElementById('vidBtn').disabled = true; document.getElementById('vidLoader').style.display = 'block';
+            document.getElementById('vidPlaceholder').style.display = 'none'; document.getElementById('videoOutput').style.display = 'none';
+            
+            const formData = new FormData(); 
+            formData.append("file", file);
+            formData.append("threshold", document.getElementById('threshSlider').value); // NEW
+
+            try {
+                const res = await fetch(`${API_URL}/segment_video`, { method: "POST", body: formData });
+                const metrics = res.headers.get("X-Video-Metrics"); // RAM is inside this string
+                document.getElementById('videoOutput').src = URL.createObjectURL(await res.blob());
+                document.getElementById('videoOutput').style.display = 'block';
+                document.getElementById('vidMetrics').innerHTML = `<span style="color:#fff">${metrics}</span>`;
+            } catch (e) { document.getElementById('vidMetrics').innerHTML = `<span style="color:#ef4444;">API ERR</span>`; }
+            document.getElementById('vidBtn').disabled = false; document.getElementById('vidLoader').style.display = 'none';
+        }
+
+        // --- NODE 03: LIVE SENSOR ---
+        let liveStreamActive = false;
+        let isProcessingFrame = false;
+        let videoTrack = null;
+
+        async function toggleLiveStream() {
+            const btn = document.getElementById('liveBtn');
+            const video = document.getElementById('liveWebcam');
+            const placeholder = document.getElementById('livePlaceholder');
+            const dot = document.getElementById('liveIndicator');
+            
+            if (liveStreamActive) {
+                liveStreamActive = false;
+                if (videoTrack) videoTrack.stop();
+                btn.innerText = "ENGAGE SENSOR LINK";
+                btn.classList.remove('active'); dot.classList.remove('active');
+                placeholder.style.display = 'block'; document.getElementById('liveOverlay').style.display = 'none';
+                document.getElementById('liveMetrics').innerHTML = `<span>Link Disconnected</span><span style="color: #475569;">-- FPS | -- MB</span>`;
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 448, height: 256 } });
+                video.srcObject = stream; videoTrack = stream.getTracks()[0]; liveStreamActive = true;
+                
+                btn.innerText = "TERMINATE SENSOR LINK";
+                btn.classList.add('active'); dot.classList.add('active');
+                placeholder.style.display = 'none';
+                captureAndSendFrame();
+            } catch (err) { alert("Camera access denied or missing."); }
+        }
+
+        async function captureAndSendFrame() {
+            if (!liveStreamActive) return;
+            if (isProcessingFrame) return requestAnimationFrame(captureAndSendFrame); 
+
+            isProcessingFrame = true;
+            const video = document.getElementById('liveWebcam');
+            const canvas = document.getElementById('liveCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append("file", blob, "frame.jpg");
+                formData.append("threshold", document.getElementById('threshSlider').value); // NEW
+
+                try {
+                    const res = await fetch(`${API_URL}/segment_image`, { method: "POST", body: formData });
+                    const ms = res.headers.get("X-Inference-Time");
+                    const ram = res.headers.get("X-RAM-Usage"); // NEW
+                    
+                    const objUrl = URL.createObjectURL(await res.blob());
+                    const overlay = document.getElementById('liveOverlay');
+                    overlay.src = objUrl; overlay.style.display = 'block';
+                    
+                    document.getElementById('liveMetrics').innerHTML = `<span>Live Edge Compute</span><span style="color:#fff;">[ ${(1000/ms).toFixed(1)} FPS | ${ram} MB ]</span>`;
+                    overlay.onload = () => URL.revokeObjectURL(objUrl);
+                } catch (e) {
+                    document.getElementById('liveMetrics').innerHTML = `<span style="color:#ef4444;">STREAM DROPPED</span>`;
+                }
+                isProcessingFrame = false;
+                requestAnimationFrame(captureAndSendFrame); 
+            }, 'image/jpeg', 0.8);
+        }
+    </script>
+</body>
+</html>
