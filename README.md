@@ -28,10 +28,7 @@ Our solution specifically addresses the **Binary Classification of Drivable vs. 
 * **Dynamic Probability Thresholding:** A live UI slider allows engineers to adjust the neural network's strictness (`0.1` to `0.9`) in real-time, actively mitigating Out-of-Distribution (OOD) indoor hallucinations.
 * **Live Sensor Feed:** WebRTC integration hijacks local optical hardware (webcams) for continuous, real-time spatial evaluation directly through the browser.
 
-
-<video src="https://github.com" width="100%" controls>
-</video>
-
+![Photo_Demo-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/7c886444-29dc-4ddc-a339-f4ed4541ce26)
 
 ## How to Run The Code
 
