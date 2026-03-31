@@ -172,7 +172,7 @@ print("DataLoaders Initialized targeting EXACTLY Class 0 (Road).")
 # CELL 5 — ARCHITECTURE & HYPERPARAMETERS
 # =============================================================================
 import torch.nn.functional as F
-print("🚀 Initializing DeepLabV3+ (MobileNetV3-Large)...")
+print("Initializing DeepLabV3+ (MobileNetV3-Large)...")
 
 model = smp.DeepLabV3Plus(
     encoder_name="timm-mobilenetv3_large_100",
@@ -206,7 +206,7 @@ def criterion(y_pred, y_true):
 optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-3)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=15, eta_min=1e-6)
 
-print("✅ Model, Loss, and Optimizer ready.")
+print("Model, Loss, and Optimizer ready.")
 
 
 # =============================================================================
@@ -218,7 +218,7 @@ scaler     = GradScaler()
 best_miou  = 0.0
 history    = {'train_loss': [], 'val_miou': [], 'lr': []}
 
-print("🔥 Starting High-Speed Training on BDD100K...")
+print("Starting High-Speed Training on BDD100K...")
 
 for epoch in range(NUM_EPOCHS):
 
@@ -272,7 +272,7 @@ for epoch in range(NUM_EPOCHS):
     history['val_miou'].append(val_miou)
     history['lr'].append(scheduler.get_last_lr()[0])
 
-    print(f"📈 Epoch {epoch+1:02d} | Loss: {avg_loss:.4f} | Val mIoU: {val_miou:.4f}")
+    print(f"Epoch {epoch+1:02d} | Loss: {avg_loss:.4f} | Val mIoU: {val_miou:.4f}")
 
     if val_miou > best_miou:
         best_miou = val_miou
@@ -318,7 +318,7 @@ torch.onnx.export(
     export_params=True, opset_version=13, input_names=['image'], output_names=['mask'],
     do_constant_folding=True
 )
-print("\n✅ ONNX Model Exported to /content/bdd_drivable_opt.onnx")
+print("\n ONNX Model Exported to /content/bdd_drivable_opt.onnx")
 
 # 4. FPS Benchmark
 ort_session = ort.InferenceSession('/content/bdd_drivable_opt.onnx', providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
